@@ -1,24 +1,27 @@
 # Ollama To GGUF (Node.js Edition)
 
-An interactive, lightweight Node.js utility designed to extract, reconstruct, and export downloaded Ollama local models back into standard single-file GGUF formats. 
+An interactive and automated, lightweight Node.js utility designed to extract, reconstruct, and export downloaded Ollama local models back into standard single-file GGUF formats. 
 
 ## Author
 
 **Tiago França**
 - **Website:** [tiagofranca.com](https://tiagofranca.com)
-- **GitHub:** [@tiagofrancafernandes](https://github.com/tiagofrancafernandes)
-- **LinkedIn:** [linkedin.com/in/tiago-php](https://linkedin.com/in/tiago-php)
+- **GitHub:** [@tiagofrancafernandes](https://github.com)
+- **LinkedIn:** [://linkedin.com](https://://linkedin.com)
 
 ## Overview
 
-Ollama natively slices LLM weight layers and metadata configurations across scattered cache fragments called *blobs*. This utility automates the local scanning of your Ollama system directories, tracks down the exact manifest files, decodes model configurations (like quantization methods and base architectures), and sequentially merges the byte streams back into an uncorrupted, portable `.gguf` file ready for use in LM Studio, Llama.cpp, or KoboldCPP.
+Ollama natively slices LLM weight layers and metadata configurations across scattered cache fragments called *blobs*. This utility automates the local scanning of your Ollama system directories, tracks down the exact manifest files, decodes model configurations (like quantization methods and base architectures), and sequentially merges the byte streams back into an uncorrupted, portable `.gguf` file.
+
+The exported GGUF file is placed inside a clean, dedicated subfolder named directly after the model variant, ready for instant use in tools like LM Studio, Llama.cpp, or KoboldCPP.
 
 ## Features
 
-- ⚡ **Zero Dependencies**: Built entirely using native Node.js Core Modules (`fs`, `path`, `readline`). No external NPM packages or installations required.
-- 🧠 **Memory Efficient**: Streams file data sequentially through node memory buffers to safely handle massive model variants (8B, 14B, 32B+) without crashing your RAM.
-- 🎛️ **Interactive CLI Menu**: Dynamically fetches and lists all your locally downloaded Ollama models with their exact sizes and quantization footprints.
-- 📂 **Flexible Destination**: Lets you choose between exporting to a default script-relative `Output/` directory or entering a custom path on your system.
+- ⚡ **Zero Dependencies**: Built entirely using native Node.js Core Modules (`fs`, `path`, `readline`). No external NPM packages or `npm install` needed.
+- 🧠 **Memory Efficient**: Streams large file data sequentially through node memory chunks to safely handle massive model variants (8B, 14B, 32B, 70B+) without exceeding system RAM.
+- 🌍 **Built-in Multilanguage Support**: Automatically detects your operating system language environment, supporting English (`en`) and Portuguese (`pt-BR`) dynamically.
+- 🎛️ **Dual Operational Modes**: Works either as a friendly interactive CLI menu or as a fully headless automated pipeline using advanced filtering flags.
+- 📂 **Structured Directory Outputs**: Automatically creates a model-named folder under the target directory to keep multiple outputs perfectly categorized.
 
 ## Requirements
 
@@ -30,7 +33,7 @@ Ollama natively slices LLM weight layers and metadata configurations across scat
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/OllamaToGGUF-Node.git
    cd OllamaToGGUF-Node
    ```
 
@@ -42,54 +45,55 @@ Ollama natively slices LLM weight layers and metadata configurations across scat
 
 ## Usage
 
-1. **Run the Script**:
-   ```bash
-   node convert.js
-   ```
+### 1. Interactive Menu Mode
 
-2. **Select a Model**:
-   The interactive command-line application will list all models sitting in your Ollama cache directory. Type the numeric index corresponding to your target model and press **Enter**.
+If you run the script without target parameters, it fires up an interactive menu showing your models, sizes, and unique internal IDs:
 
-3. **Specify Export Path**:
-   Press **Enter** to instantly write to the local `./Output` subdirectory, or write/paste an absolute path to a specific destination folder.
+```bash
+node convert.js
+```
 
-4. **Exit**:
-   Enter `0` at the model selection prompt to cancel out and exit.
+- **Select Multiple Models**: Type model numbers separated by commas (e.g., `1,3`).
+- **Convert Everything**: Type `all` at the selection prompt.
+- **Cancel**: Enter `0` to safely exit.
+
+### 2. Automated & Batch CLI Flags
+
+Skip the interactive menu entirely by utilizing automated batch commands. This is perfect for custom crons, shell scripts, or dev environment setups.
+
+
+| Flag | Description | Example |
+| :--- | :--- | :--- |
+| `--lang` | Forces a specific output language language override (`en`, `pt`). | `--lang=en` |
+| `--destination-base-dir` | Overrides the default save path (Creates a fallback folder if omitted). | `--destination-base-dir=/Volumes/ExternalSSD/AI` |
+| `--all-models` | Instantly processes all discovered models without human input. | `--all-models` |
+| `--model-names` | Filter and convert specific models using short names or full tags. | `--model-names='llama3:8b,phi3'` |
+| `--model-ids` | Filter using the unique short hashes generated by the script. | `--model-ids='a3b1c2d3e4f5,123xyz987abc'` |
+| `--except-model-names` | Processes all local models *except* for the comma-separated names. | `--except-model-names='mistral,gemma'` |
+| `--except-model-ids` | Processes all local models *except* for the comma-separated configuration IDs. | `--except-model-ids='b7f2c412'` |
+
+*Note: Whenever `--except-model-names` or `--except-model-ids` are triggered, the script automatically presumes an implicit `--all-models` flag with exceptions applied.*
 
 ## Default Directory Map Checked
 
 - **Linux / macOS**: `~/.ollama/models/manifests/registry.ollama.ai/` & `~/.ollama/models/blobs/`
 - **Windows**: `C:\Users\<User>\.ollama\models\`
 
-## Example Execution
+## Example Execution Examples
 
+**Forcing English and Targeting Names:**
 ```bash
-\$ node convert.js
+node convert.js --lang=en --model-names='llama3:8b' --destination-base-dir='./MyModels'
+```
 
---- Ollama To GGUF (Node.js) ---
-
-Modelos Ollama disponíveis para conversão:
-
-1. llama3:8b (Quantização: Q4_K_M, Tamanho: 4.66 GB)
-2. phi3:latest (Quantização: Q4_K_M, Tamanho: 2.18 GB)
-
-Digite o número do modelo que deseja converter (or 0 para sair): 1
-
-Diretório padrão: /home/tiago/projects/OllamaToGGUF-Node/Output
-Pressione ENTER para o padrão ou digite um caminho personalizado: 
-
-Iniciando exportação para: /home/tiago/projects/OllamaToGGUF-Node/Output/llama3/llama3-llama-Q4_K_M.gguf
- -> Lendo Camada [1/4]: application/vnd.ollama.image.model
- -> Lendo Camada [2/4]: application/vnd.ollama.image.license
- -> Lendo Camada [3/4]: application/vnd.ollama.image.template
- -> Lendo Camada [4/4]: application/vnd.ollama.image.params
-
-Sucesso! Modelo exportado perfeitamente.
+**Automated Headless Export (Everything except one model):**
+```bash
+node convert.js --except-model-names='gemma'
 ```
 
 ## Contributing
 
-Contributions make the open-source community an amazing place to learn and create. Feel free to open issues, request edge-case features, or submit pull requests with code modifications.
+Contributions make the open-source community an amazing place to learn, inspire, and create. Feel free to open issues, submit pull requests with code performance adjustments, or suggest new terminal language translations.
 
 ## License
 
